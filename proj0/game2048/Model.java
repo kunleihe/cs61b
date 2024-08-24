@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author Kunlei He
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -114,6 +114,59 @@ public class Model extends Observable {
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
 
+        // fix side if not NORTH
+        board.setViewingPerspective(side);
+        
+        // fill out empty space, keep doing so until all empty space is at the bottom
+        for (int col = 0; col < board.size(); col += 1) {
+            int i = 0;
+            while (i < 3) {
+                for (int row = board.size() - 1; row > 0; row -= 1) {
+
+                    Tile t = tile(col, row);
+                    Tile tBelow = tile(col, row - 1);
+
+                    if (t == null && tBelow != null) {
+                        board.move(col, row, tBelow);
+                        changed = true;
+                    }
+                }
+                i += 1;
+            }
+        }
+
+        // next, merge and add score
+        for (int col = 0; col < board.size(); col += 1) {
+            for (int row = board.size() - 1; row > 0; row -= 1) {
+                Tile t = tile(col, row);
+                Tile tBelow = tile(col, row - 1);
+
+                if (t != null & tBelow != null) {
+                    if (t.value() == tBelow.value()) {
+                        board.move(col, row, tBelow);
+                        changed = true;
+                        score += board.tile(col, row).value();
+                    }
+                }
+            }
+        }
+
+        // last, fill out  the empty space caused by merging
+        for (int col = 0; col < board.size(); col += 1) {
+            for (int row = board.size() - 1; row > 0; row -= 1) {
+                Tile t = tile(col, row);
+                Tile tBelow = tile(col, row - 1);
+
+                if (t == null & tBelow != null) {
+                    board.move(col, row, tBelow);
+                    changed = true;
+                }
+            }
+        }
+
+
+        board.setViewingPerspective(Side.NORTH);
+
         checkGameOver();
         if (changed) {
             setChanged();
@@ -138,6 +191,13 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        for (int col = 0; col < b.size(); col++) {
+            for (int row = 0; row < b.size(); row++) {
+                if (b.tile(col, row) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +208,15 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        for (int col = 0; col < b.size(); col ++) {
+            for (int row = 0; row < b.size(); row ++) {
+                if (b.tile(col, row) != null) {
+                    if (b.tile(col, row).value() == MAX_PIECE) {
+                        return true;
+                }
+               }
+            }
+        }
         return false;
     }
 
@@ -159,7 +228,26 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        if (!emptySpaceExists(b)) {
+            for (int col = 0; col < b.size(); col ++) {
+                for (int row = 0; row < b.size() - 1; row ++) {
+                    if (b.tile(col, row).value() == b.tile(col, row + 1).value()) {
+                        return true;
+                    }
+                }
+            }
+
+            for (int row = 0; row < b.size(); row ++) {
+                for (int col = 0; col < b.size() - 1; col ++) {
+                    if (b.tile(col, row).value() == b.tile(col + 1, row).value()) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        return true;
     }
 
 
