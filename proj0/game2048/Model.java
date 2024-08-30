@@ -116,7 +116,7 @@ public class Model extends Observable {
 
         // fix side if not NORTH
         board.setViewingPerspective(side);
-        
+
         // fill out empty space, keep doing so until all empty space is at the bottom
         for (int col = 0; col < board.size(); col += 1) {
             int i = 0;
